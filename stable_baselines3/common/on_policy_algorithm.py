@@ -14,6 +14,8 @@ from stable_baselines3.common.type_aliases import GymEnv, MaybeCallback, Schedul
 from stable_baselines3.common.utils import obs_as_tensor, safe_mean
 from stable_baselines3.common.vec_env import VecEnv
 
+import wandb
+
 
 class OnPolicyAlgorithm(BaseAlgorithm):
     """
@@ -72,6 +74,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
         _init_setup_model: bool = True,
+        wandb_enable: bool = False,
         supported_action_spaces: Optional[Tuple[gym.spaces.Space, ...]] = None,
     ):
 
@@ -99,6 +102,8 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         self.vf_coef = vf_coef
         self.max_grad_norm = max_grad_norm
         self.rollout_buffer = None
+
+        self.wandb_enable = wandb_enable
 
         if _init_setup_model:
             self._setup_model()
@@ -250,6 +255,15 @@ class OnPolicyAlgorithm(BaseAlgorithm):
                 logger.record("time/fps", fps)
                 logger.record("time/time_elapsed", int(time.time() - self.start_time), exclude="tensorboard")
                 logger.record("time/total_timesteps", self.num_timesteps, exclude="tensorboard")
+
+                if self.wandb_enable:
+                    wandb.log({
+                        'Episodes': iteration,
+                        'Return': self.ep_info_buffer[-1]["r"] if len(self.ep_info_buffer) > 0 else 0.0,
+                        'Average Return': safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]),
+                        'Hours': (time.time() - self.start_time)/3600},
+                        step=self.num_timesteps) 
+
                 logger.dump(step=self.num_timesteps)
 
             self.train()

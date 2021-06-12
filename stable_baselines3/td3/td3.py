@@ -86,6 +86,7 @@ class TD3(OffPolicyAlgorithm):
         verbose: int = 0,
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
+        wandb_enable: bool = False,
         _init_setup_model: bool = True,
     ):
 
@@ -112,6 +113,7 @@ class TD3(OffPolicyAlgorithm):
             seed=seed,
             sde_support=False,
             optimize_memory_usage=optimize_memory_usage,
+            wandb_enable=wandb_enable,
             supported_action_spaces=(gym.spaces.Box),
         )
 

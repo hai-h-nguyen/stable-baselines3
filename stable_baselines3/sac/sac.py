@@ -101,6 +101,7 @@ class SAC(OffPolicyAlgorithm):
         verbose: int = 0,
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
+        wandb_enable: bool = False,
         _init_setup_model: bool = True,
     ):
 
@@ -129,6 +130,7 @@ class SAC(OffPolicyAlgorithm):
             sde_sample_freq=sde_sample_freq,
             use_sde_at_warmup=use_sde_at_warmup,
             optimize_memory_usage=optimize_memory_usage,
+            wandb_enable=wandb_enable,
             supported_action_spaces=(gym.spaces.Box),
         )
 

@@ -20,6 +20,8 @@ from stable_baselines3.common.utils import safe_mean, should_collect_more_steps
 from stable_baselines3.common.vec_env import VecEnv
 from stable_baselines3.her.her_replay_buffer import HerReplayBuffer
 
+import wandb
+
 
 class OffPolicyAlgorithm(BaseAlgorithm):
     """
@@ -104,6 +106,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         use_sde_at_warmup: bool = False,
         sde_support: bool = True,
         remove_time_limit_termination: bool = False,
+        wandb_enable: bool = False,
         supported_action_spaces: Optional[Tuple[gym.spaces.Space, ...]] = None,
     ):
 
@@ -137,6 +140,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
             replay_buffer_kwargs = {}
         self.replay_buffer_kwargs = replay_buffer_kwargs
         self._episode_storage = None
+        self.wandb_enable = wandb_enable
 
         # Remove terminations (dones) that are due to time limit
         # see https://github.com/hill-a/stable-baselines/issues/863
@@ -327,7 +331,7 @@ class OffPolicyAlgorithm(BaseAlgorithm):
         self,
         total_timesteps: int,
         callback: MaybeCallback = None,
-        log_interval: int = 4,
+        log_interval: int = 1,
         eval_env: Optional[GymEnv] = None,
         eval_freq: int = -1,
         n_eval_episodes: int = 5,
@@ -442,6 +446,15 @@ class OffPolicyAlgorithm(BaseAlgorithm):
 
         if len(self.ep_success_buffer) > 0:
             logger.record("rollout/success rate", safe_mean(self.ep_success_buffer))
+
+        if self.wandb_enable:
+            wandb.log({
+                'Episodes': self._episode_num,
+                'Return': self.ep_info_buffer[-1]["r"],
+                'Average Return': safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]),
+                'Hours': (time.time() - self.start_time)/3600},
+                step=self.num_timesteps)            
+
         # Pass the number of timesteps for tensorboard
         logger.dump(step=self.num_timesteps)
 

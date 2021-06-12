@@ -75,6 +75,7 @@ class DDPG(TD3):
         verbose: int = 0,
         seed: Optional[int] = None,
         device: Union[th.device, str] = "auto",
+        wandb_enable: bool = False,
         _init_setup_model: bool = True,
     ):
 
@@ -99,6 +100,7 @@ class DDPG(TD3):
             create_eval_env=create_eval_env,
             seed=seed,
             optimize_memory_usage=optimize_memory_usage,
+            wandb_enable=wandb_enable,
             # Remove all tricks from TD3 to obtain DDPG:
             # we still need to specify target_policy_noise > 0 to avoid errors
             policy_delay=1,
